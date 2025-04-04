@@ -7,3 +7,5 @@ pydantic
 langchain
 langgraph
 openai
+discord
+python-dotenv

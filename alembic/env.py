@@ -26,9 +26,6 @@ target_metadata = Base.metadata
 
 # Override sqlalchemy.url with DATABASE_URL environment variable
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/celoaifund")
-# For local development, use localhost instead of 'db' hostname
-if "db" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("db", "localhost")
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 def run_migrations_offline() -> None:

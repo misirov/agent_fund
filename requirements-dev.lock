@@ -34,8 +34,11 @@ charset-normalizer==3.4.1
     # via requests
 click==8.1.8
     # via uvicorn
+discord==2.3.2
+    # via ai-manager
 discord-py==2.5.2
     # via ai-manager
+    # via discord
 distro==1.9.0
     # via openai
 fastapi==0.115.12

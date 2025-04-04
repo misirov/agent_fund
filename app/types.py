@@ -19,7 +19,7 @@ class FundResponse(FundBase):
     status: str
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ContributionBase(BaseModel):
     contributor_address: str
@@ -35,4 +35,4 @@ class ContributionResponse(ContributionBase):
     created_at: datetime
     
     class Config:
-        orm_mode = True 
+        from_attributes = True 

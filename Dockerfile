@@ -4,7 +4,11 @@ WORKDIR /code
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Force reinstall all packages to ensure discord is properly installed
+RUN pip install --no-cache-dir --force-reinstall -r requirements.txt
+
+# Install discord.py explicitly
+RUN pip install --no-cache-dir discord.py
 
 COPY . .
 
