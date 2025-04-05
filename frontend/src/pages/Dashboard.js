@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, getMessages, getProtocols } from '../api/api';
+import { getFundData } from '../api/web3';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
 import { Pie, Line } from 'react-chartjs-2';
 
@@ -10,6 +11,7 @@ export default function Dashboard() {
     userCount: 0,
     messageCount: 0,
     protocolCount: 0,
+    totalSupply: '0',
   });
   
   const [sentimentData, setSentimentData] = useState({
@@ -45,63 +47,91 @@ export default function Dashboard() {
       },
     ],
   });
+  
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        
+        // Initialize with default values
+        let users = [];
+        let messages = [];
+        let protocols = [];
+        let fundData = { totalSupply: '0' };
+        
         // Fetch basic stats
-        const users = await getUsers();
-        const messages = await getMessages();
-        const protocols = await getProtocols();
+        try {
+          users = await getUsers();
+          messages = await getMessages();
+          protocols = await getProtocols();
+        } catch (error) {
+          console.error('Error fetching API data:', error);
+          setApiError(true);
+        }
+        
+        // Fetch fund data
+        try {
+          fundData = await getFundData();
+        } catch (error) {
+          console.error('Error fetching blockchain data:', error);
+        }
         
         setStats({
           userCount: users.length,
           messageCount: messages.length,
           protocolCount: protocols.length,
+          totalSupply: fundData.totalSupply,
         });
         
-        // Calculate sentiment distribution
-        const positive = messages.filter(m => m.sentiment_score > 0.2).length;
-        const negative = messages.filter(m => m.sentiment_score < -0.2).length;
-        const neutral = messages.length - positive - negative;
-        
-        setSentimentData(prevData => ({
-          ...prevData,
-          datasets: [
-            {
-              ...prevData.datasets[0],
-              data: [positive, neutral, negative],
-            },
-          ],
-        }));
-        
-        // Calculate message activity by day
-        const messageDates = messages.map(m => {
-          const date = new Date(m.created_at);
-          return date.toISOString().split('T')[0];
-        });
-        
-        // Count messages per day
-        const messageCounts = {};
-        messageDates.forEach(date => {
-          messageCounts[date] = (messageCounts[date] || 0) + 1;
-        });
-        
-        // Sort dates
-        const sortedDates = Object.keys(messageCounts).sort();
-        
-        setMessageActivity(prevData => ({
-          labels: sortedDates,
-          datasets: [
-            {
-              ...prevData.datasets[0],
-              data: sortedDates.map(date => messageCounts[date]),
-            },
-          ],
-        }));
+        if (messages.length > 0) {
+          // Calculate sentiment distribution
+          const positive = messages.filter(m => m.sentiment_score > 0.2).length;
+          const negative = messages.filter(m => m.sentiment_score < -0.2).length;
+          const neutral = messages.length - positive - negative;
+          
+          setSentimentData(prevData => ({
+            ...prevData,
+            datasets: [
+              {
+                ...prevData.datasets[0],
+                data: [positive, neutral, negative],
+              },
+            ],
+          }));
+          
+          // Calculate message activity by day
+          const messageDates = messages.map(m => {
+            const date = new Date(m.created_at);
+            return date.toISOString().split('T')[0];
+          });
+          
+          // Count messages per day
+          const messageCounts = {};
+          messageDates.forEach(date => {
+            messageCounts[date] = (messageCounts[date] || 0) + 1;
+          });
+          
+          // Sort dates
+          const sortedDates = Object.keys(messageCounts).sort();
+          
+          setMessageActivity(prevData => ({
+            labels: sortedDates,
+            datasets: [
+              {
+                ...prevData.datasets[0],
+                data: sortedDates.map(date => messageCounts[date]),
+              },
+            ],
+          }));
+        }
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -112,8 +142,21 @@ export default function Dashboard() {
     <div>
       <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
       
+      {apiError && (
+        <div className="mt-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+          <p className="font-bold">API Connection Issue</p>
+          <p>Could not connect to the API. Some data may not be available.</p>
+        </div>
+      )}
+      
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-celo-green"></div>
+        </div>
+      ) : (
+      <>
       {/* Stats Cards */}
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center">
@@ -173,9 +216,17 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <dt className="text-sm font-medium text-gray-500 truncate">Fund Value</dt>
+            <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.totalSupply} USD</dd>
+          </div>
+        </div>
       </div>
       
       {/* Charts */}
+      {!apiError && (
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
@@ -208,6 +259,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      )}
+      </>
+      )}
     </div>
   );
 } 

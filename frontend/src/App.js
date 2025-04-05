@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Protocols from './pages/Protocols';
 import Users from './pages/Users';
 import Messages from './pages/Messages';
+import Fund from './pages/Fund';
 import Layout from './components/Layout';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/protocols" element={<Protocols />} />
         <Route path="/users" element={<Users />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/fund" element={<Fund />} />
       </Routes>
     </Layout>
   );

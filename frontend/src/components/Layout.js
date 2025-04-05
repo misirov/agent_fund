@@ -5,6 +5,7 @@ import {
   UsersIcon, 
   ChatBubbleLeftRightIcon, 
   CubeIcon,
+  CurrencyDollarIcon,
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
@@ -14,6 +15,7 @@ const navigation = [
   { name: 'Protocols', href: '/protocols', icon: CubeIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
+  { name: 'Fund', href: '/fund', icon: CurrencyDollarIcon },
 ];
 
 function classNames(...classes) {
