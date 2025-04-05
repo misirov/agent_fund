@@ -10,3 +10,4 @@ openai
 discord
 python-dotenv
 requests
+web3

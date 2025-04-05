@@ -12,17 +12,18 @@ interface IERC20 {
 
 
 contract Fund {
-    event tokenWhitelisted(address);
-    event sharesMinted(address, uint256);
-    event withdrawnShares(address, uint256);
+    event tokenWhitelisted(address indexed token);
+    event sharesMinted(address indexed user, uint256 amount);
+    event withdrawnShares(address indexed user, uint256 amount);
 
     address public owner;
     uint256 public totalShares;
     uint256 public allocatedToken;
     uint256 public totalSupply;
-    address public immutable token = 0x471EcE3750Da237f93B8E339c536989b8978a438;
+    address public token;
 
     mapping(address user => uint256 shares) public userShares;
+    mapping(address token => bool whitelisted) public whitelistedTokens;
     
 
     modifier onlyOwner() {
@@ -30,22 +31,31 @@ contract Fund {
         _;
     }
 
-    constructor(address _owner){
+    constructor(address _owner, address _token){
         owner = _owner;
+        token = _token;
+        whitelistToken(_token);
     }
 
 
-    function mintShares(uint256 _amount) public {
+    function deposit(uint256 _amount) public returns (bool) {
+        require(_amount > 0, "no 0 amount");
+        require(isWhitelisted(token), "Token not whitelisted");
+        IERC20(token).transferFrom(msg.sender, address(this), _amount);        
         userShares[msg.sender] += _amount;
         totalSupply += _amount;
+        totalShares += _amount;
         emit sharesMinted(msg.sender, _amount);
+        return true;
     }
 
 
-    function withdrawShares(uint256 _amount) external {
+    function withdraw(uint256 _amount) external {
         require(userShares[msg.sender] >= _amount, "not enough shares");
         userShares[msg.sender] -= _amount;
         totalSupply -= _amount;
+        totalShares -= _amount;
+        IERC20(token).transfer(msg.sender, _amount);
         emit withdrawnShares(msg.sender, _amount);
     }
 
@@ -60,6 +70,14 @@ contract Fund {
         return userShares[_user];
     }
 
+    function whitelistToken(address _token) public onlyOwner {
+        require(_token != address(0), "Invalid token address");
+        whitelistedTokens[_token] = true;
+        emit tokenWhitelisted(_token);
+    }
 
+    function isWhitelisted(address _token) public view returns (bool) {
+        return whitelistedTokens[_token];
+    }
 
 }
