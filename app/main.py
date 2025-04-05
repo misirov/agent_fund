@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import json
+from fastapi.middleware.cors import CORSMiddleware
 
 from db.main import get_db
 from app.types import (
@@ -12,6 +13,15 @@ from app.types import (
 from db.models import DiscordUser, DiscordChannel, DiscordMessage
 
 app = FastAPI(title="CeloAIFund")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow the frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.get("/")
 def read_root():

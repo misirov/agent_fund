@@ -26,7 +26,7 @@ An AI-managed investment fund built on the Celo blockchain. This project uses AI
 ## Setup
 
 1. Clone the repository
-2. Run `docker-compose up -d` to start the PostgreSQL database
+2. Run `docker compose up` to start all services
 3. Install dependencies with `pip install -r requirements.txt`
 4. Run migrations with `alembic upgrade head`
 5. Start the application with `uvicorn app.main:app --reload`

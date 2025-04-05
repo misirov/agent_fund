@@ -34,8 +34,8 @@ contract Fund {
         owner = _owner;
     }
 
-    function mintShares(uint256 _amount) public payable {
-        require(_amount > 1, "min 1 CELO");
+
+    function mintShares(uint256 _amount) public {
         userShares[msg.sender] += _amount;
         totalSupply += _amount;
         emit sharesMinted(msg.sender, _amount);
