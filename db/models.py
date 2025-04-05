@@ -1,53 +1,48 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import enum
 
 from db.main import Base
 
-class FundStatus(enum.Enum):
-    FUNDRAISING = "fundraising"
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-class Fund(Base):
-    __tablename__ = "funds"
+class DiscordUser(Base):
+    __tablename__ = "discord_users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    description = Column(String)
-    target_amount = Column(Float)
-    current_amount = Column(Float, default=0.0)
-    duration_days = Column(Integer)
-    creator_address = Column(String)
+    discord_id = Column(String, unique=True, index=True)
+    username = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    status = Column(String, default=FundStatus.FUNDRAISING.value)
     
-    contributions = relationship("Contribution", back_populates="fund")
-    investments = relationship("Investment", back_populates="fund")
+    messages = relationship("DiscordMessage", back_populates="user")
 
-class Contribution(Base):
-    __tablename__ = "contributions"
+class DiscordChannel(Base):
+    __tablename__ = "discord_channels"
 
     id = Column(Integer, primary_key=True, index=True)
-    fund_id = Column(Integer, ForeignKey("funds.id"))
-    contributor_address = Column(String)
-    amount = Column(Float)
-    transaction_hash = Column(String, unique=True)
+    discord_id = Column(String, unique=True, index=True)
+    name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    fund = relationship("Fund", back_populates="contributions")
+    messages = relationship("DiscordMessage", back_populates="channel")
 
-class Investment(Base):
-    __tablename__ = "investments"
+class DiscordMessage(Base):
+    __tablename__ = "discord_messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    fund_id = Column(Integer, ForeignKey("funds.id"))
-    asset_name = Column(String)
-    asset_address = Column(String)
-    amount = Column(Float)
-    transaction_hash = Column(String, unique=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    discord_id = Column(String, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("discord_users.id"))
+    channel_id = Column(Integer, ForeignKey("discord_channels.id"))
+    content = Column(Text)
     
-    fund = relationship("Fund", back_populates="investments") 
+    # Sentiment analysis fields
+    sentiment_score = Column(Float, nullable=True)  # -1.0 to 1.0
+    protocol_name = Column(String, nullable=True)
+    confidence = Column(Float, nullable=True)
+    technical_indicators = Column(Text, nullable=True)  # Store as JSON string
+    risk_assessment = Column(String, nullable=True)
+    community_consensus = Column(Float, nullable=True)  # 0.0 to 1.0
+    
+    created_at = Column(DateTime(timezone=True))
+    stored_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("DiscordUser", back_populates="messages")
+    channel = relationship("DiscordChannel", back_populates="messages") 

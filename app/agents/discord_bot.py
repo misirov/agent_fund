@@ -12,7 +12,7 @@ class DiscordClient:
     Allows reading messages and posting replies.
     """
     
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str):
         """
         Initialize the Discord client.
         
@@ -115,21 +115,3 @@ class DiscordClient:
     async def close(self):
         """Close the Discord client connection"""
         await self.client.close()
-
-
-# Example usage
-async def example_message_handler(message):
-    """Example handler that echoes messages"""
-    if message.content.startswith('!echo'):
-        content = message.content[6:]  # Remove '!echo ' from the message
-        await message.channel.send(f"Echo: {content}")
-
-if __name__ == "__main__":
-    # Example of how to use the client
-    discord_client = DiscordClient()
-    
-    # Add a message handler
-    discord_client.add_message_handler(example_message_handler)
-    
-    # Run the client (blocking)
-    discord_client.run()

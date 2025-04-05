@@ -60,6 +60,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/celoaifund
+      - API_URL=http://app:8000
     command: python -m app.agents.main
     restart: unless-stopped
 
