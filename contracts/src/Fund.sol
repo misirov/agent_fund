@@ -64,7 +64,6 @@ contract Fund {
         IERC20(token).transfer(_to, _amount);
         allocatedToken += _amount;
     }
-
  
     function getShares(address _user) public view returns (uint256) {
         return userShares[_user];
